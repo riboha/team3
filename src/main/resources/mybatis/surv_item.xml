@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="dev.mvc.surv_item.Surv_Item_DAOInter">
+
+  <insert id="surv_item_create" parameterType="Surv_Item_VO">
+    INSERT INTO SURV_ITEM(SURV_ITEM_NO, surv_no, surv_item_seqno, surv_item_ques, surv_item_cnt, surv_item_passwd)
+    VALUES(surv_item_seq.nextval, #{surv_no}, #{surv_item_seqno}, #{surv_item_ques}, #{surv_item_cnt}, #{surv_item_passwd})
+  </insert>
+  
+  <!-- 
+  <resultMap type="Surv_Surv_Item_VO" id="Surv_Surv_Item_VO_Map">
+    <association property="surv_VO" javaType="Surv_VO">
+      <result column="s_surv_no" property="surv_no"/>
+      <result column="s_surv_title" property="surv_title"/>
+    </association>
+    
+    <association property="surv_Item_VO" javaType="Surv_Item_VO">
+      <result column="i_surv_item_no" property="surv_item_no"/>
+      <result column="i_surv_no" property="surv_no"/>
+      <result column="i_surv_item_seqno" property="surv_item_seqno"/>
+      <result column="i_surv_item_ques" property="surv_item_ques"/>
+      <result column="i_surv_item_cnt" property="surv_item_cnt"/>
+    </association>
+  </resultMap>  -->
+  
+  
+  <select id="surv_item_list" resultType="Surv_Item_VO">
+    SELECT SURV_ITEM_NO, SURV_NO, SURV_item_SEQNO, SURV_item_QUES, surv_item_cnt, surv_item_passwd
+  FROM SURV_ITEM
+  ORDER BY SURV_item_SEQNO ASC
+  </select>
+  
+  <select id="surv_item_read" resultType="Surv_Item_VO" parameterType="int">
+    SELECT SURV_ITEM_NO, SURV_NO, SURV_item_SEQNO, SURV_item_QUES, surv_item_cnt, surv_item_passwd
+  FROM SURV_ITEM
+  where SURV_ITEM_NO=#{SURV_ITEM_NO}
+  </select>
+  
+  <update id="surv_item_update" parameterType="Surv_Item_VO" >
+    update surv_item
+    set surv_item_seqno=#{surv_item_seqno}, surv_item_ques=#{surv_item_ques}
+    where surv_item_no=#{surv_item_no}
+  </update>
+
+  <select id="surv_item_passwd_check" parameterType="HashMap" resultType="int">
+    SELECT COUNT(*) as passwd_cnt
+    FROM surv_item
+    WHERE surv_item_no=#{surv_item_no} AND surv_item_passwd=#{surv_item_passwd}
+  </select>
+  
+  <delete id="surv_item_delete" parameterType="int">
+    delete 
+    from surv_item
+    where surv_item_no=#{surv_item_no}
+  </delete>
+  
+  <update id ="surv_itemCnt" parameterType="int">
+     update surv_item
+   set surv_item_cnt = surv_item_cnt + 1
+   where surv_item_no=#{surv_item_no}
+  </update>
+
+</mapper>

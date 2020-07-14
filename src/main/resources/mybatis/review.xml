@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+ 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="dev.mvc.review.ReviewDAOInter">
+
+<!-- 리뷰 등록 -->
+<insert id="create" parameterType="ReviewVO">
+  INSERT INTO review(review_no, at_no, mem_no, payment_no, review_word, review_rate,  rdate)
+  VALUES(review_seq.nextval, #{at_no}, #{mem_no}, #{payment_no}, #{review_word}, #{review_rate},  sysdate)
+</insert>
+
+<!-- 조회 (Mem / Review Join) -->
+<!-- <select id="read" resultType="Mem_ReviewVO" parameterType="int">
+SELECT m.mem_nick, m.mem_pw
+           r.review_no, r.at_no, r.mem_no, r.review_word, r.rdate
+FROM mem m,  review r
+WHERE (m.mem_no = r.mem_no) AND r.at_no=#{at_no}
+ORDER BY r.review_no DESC
+</select>
+ -->
+ 
+ <select id="read" resultType="Mem_ReviewVO" parameterType="int">
+  SELECT m.mem_nick, m.mem_pw
+             r.review_no, r.at_no, r.mem_no, r.review_word, r.rdate
+  FROM mem m,  review r
+  WHERE (m.mem_no = r.mem_no) AND r.at_no=#{at_no}
+  ORDER BY r.review_no DESC
+</select>
+
+<!-- 리뷰 목록 (전체) -->
+<select id="list" resultType="ReviewVO">
+  SELECT review_no, at_no, mem_no, review_word, payment_no, review_word,  rdate
+  FROM review
+  ORDER BY review_no DESC
+</select>
+
+<!-- 리뷰 목록 (상품별) -->
+<select id="list_by_mem_no" resultType="ReviewVO" parameterType="int">
+  SELECT review_no, at_no, payment_no, review_word, review_rate, rdate
+  FROM review
+  WHERE at_no=#{at_no}
+  ORDER BY review_no DESC
+</select>
+
+
+<!-- 리뷰 목록 (회원별) -->
+<select id="list_by_at_no" resultType="ReviewVO" parameterType="int">
+  SELECT review_no, at_no, payment_no, review_word, review_rate, rdate
+  FROM review
+  WHERE mem_no=#{mem_no}
+  ORDER BY review_no DESC
+</select>
+
+
+<!-- 리뷰 갯수 (상품별) -->
+<select id="count_by_at_no" resultType="int">
+  SELECT COUNT(*) as cnt
+  FROM review
+  WHERE at_no = #{at_no}
+</select>
+
+
+<!-- 리뷰 갯수 (회원별) -->
+<select id="count_by_mem_no" resultType="int">
+  SELECT COUNT(*) as cnt
+  FROM review
+  WHERE mem_no = #{mem_no}
+</select>
+
+
+<!-- 리뷰 수정 -->
+<update id="update" parameterType="ReviewVO">
+  UPDATE review
+  SET review_word =#{review_word}, review_rate = #{review_rate}
+  WHERE review_no =#{review_no}
+</update>
+
+
+<!-- 리뷰 삭제 -->
+<delete id="delete" parameterType="int">
+  DELETE 
+  FROM review
+  WHERE review_no=#{review_no}
+</delete>
+
+
+<!--  더보기 버튼 페이징 구현 -->
+<select id="list_by_at_no_join_add_view" resultType="mem_reviewVO" parameterType="HashMap" >
+  SELECT mem_nick, review_no, at_no, mem_no, review_word, review_p, rdate, r
+  FROM (
+          SELECT mem_nick, review_no, at_no, mem_no, review_word,  rdate, rownum as r
+          FROM (
+                  SELECT m.mem_nick, r.review_no, r.at_no, r.mem_no, r.review_word, r.rdate
+                  FROM mem m,  review r
+                  WHERE (m.mem_no = r.mem_no) AND r.at_no=#{at_no}
+                  ORDER BY r.review_no DESC
+          )
+  )
+  WHERE <![CDATA[ r >= #{startNum} AND r <= #{endNum} ]]>
+</select>
+
+
+
+
+
+<!-- (최종) 페이징 리스트 -->
+<!-- <select id="list_by_at_grp_paging" resultType="at_grp_VO" parameterType="HashMap" >
+  SELECT at_grp_no, at_grp_name, at_grp_seqno, at_grp_visible, r
+  FROM (
+           SELECT at_grp_no, at_grp_name, at_grp_seqno, at_grp_visible, rownum as r
+           FROM at_grp
+           ORDER BY at_grp_seqno                
+  )
+  
+  WHERE <![CDATA[ r >= #{startNum} AND r <= #{endNum} ]]>
+     
+     1 page: WHERE r >= 1 AND r <= 10; 
+     2 page: WHERE r >= 11 AND r <= 20;
+     3 page: WHERE r >= 21 AND r <= 30;
+                              
+</select> -->
+
+
+
+
+
+</mapper>

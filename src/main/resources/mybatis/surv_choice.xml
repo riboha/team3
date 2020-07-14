@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="dev.mvc.surv_choice.Surv_Choice_DAOInter">
+  <insert id="surv_choice_create" parameterType="Surv_Choice_VO">
+    INSERT INTO surv_choice(surv_choice_no, surv_item_no, surv_ans_1, surv_ans_2, surv_ans_3, surv_ans_4, surv_choice_passwd)
+    values((select NVL(max(surv_choice_no),0)+1 as surv_choice_no from surv_choice), #{surv_item_no}, #{surv_ans_1}, #{surv_ans_2}, #{surv_ans_3}, #{surv_ans_4}, #{surv_choice_passwd})
+  </insert>
+  
+  <!--surv_item_no에 따른 choice list -->
+  <select id="surv_choice_list" resultType="Surv_Item_Choice_VO" parameterType="int">
+    SELECT i.SURV_ITEM_NO as i_surv_item_no, i.SURV_item_QUES as i_surv_item_ques,
+             c.surv_choice_no as c_surv_choice_no, c.surv_item_no as c_surv_item_no, c.surv_ans_1 as c_surv_ans_1, c.surv_ans_2 as surv_ans_2,
+             c.surv_ans_3 as c_surv_ans_3, c.surv_ans_4 as c_surv_ans_4
+             from surv_item i, surv_choice c
+             where i.surv_item_no = c.surv_item_no and i.surv_item_no=#{surv_item_no}
+             order by i.surv_item_no asc, c.surv_choice_no asc
+  </select>
+</mapper>

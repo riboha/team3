@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+ 
+<mapper namespace = "dev.mvc.faq.FaqDAOInter">
+  <!-- FAQ 등록 -->
+  <insert id="create" parameterType="FaqVO">
+    INSERT INTO faq(faqno, faq_title, faq_content, faq_rname, faq_passwd, faq_seqno, faq_division, faq_date)
+    VALUES(faq_seq.nextval, #{faq_title}, #{faq_content}, #{faq_rname}, #{faq_passwd}, #{faq_seqno}, #{faq_division}, sysdate)    
+  </insert>
+  
+  <!-- 출력 순서 내림차순 전체 목록 -->
+  <select id="list_seqno_desc" resultType="FaqVO">
+    SELECT faqno, faq_title, faq_content, faq_rname, faq_passwd, faq_seqno, faq_division, faq_date
+    FROM faq
+    ORDER BY faq_seqno DESC
+  </select>
+  
+  <!-- FAQ 조회 -->
+  <select id="read" resultType="FaqVO" parameterType="int">
+    SELECT faqno, faq_title, faq_content, faq_rname, faq_passwd, faq_seqno, faq_division, faq_date
+    FROM faq 
+    WHERE faqno = #{faqno}
+  </select>
+  
+  <!-- FAQ 수정 -->
+  <update id="update" parameterType="FaqVO">
+    UPDATE faq 
+    SET faq_title=#{faq_title}, faq_content=#{faq_content}, faq_rname=#{faq_rname}, faq_seqno=#{faq_seqno}
+    WHERE faqno = #{faqno}
+  </update>
+  
+  <!-- 패스워드 검사 -->
+  <select id="passwd_check" parameterType="HashMap" resultType="int">
+    SELECT COUNT(*) as faq_passwd_cnt
+    FROM faq
+    WHERE faqno=#{faqno} AND faq_passwd=#{faq_passwd}
+  </select> 
+  
+  <!-- FAQ 삭제 -->
+  <delete id="delete" parameterType="int">
+    DELETE FROM faq
+    WHERE faqno=#{faqno}
+  </delete>
+  
+  <!-- 출력 순서 상향 up 10 ▷ 1 -->
+  <update id="update_seqno_up" parameterType="int">
+    UPDATE faq
+    SET faq_seqno = faq_seqno - 1
+    WHERE faqno=#{faqno}
+  </update>
+
+  <!-- 출력 순서 하향 down 1 ▷ 10 --> 
+  <update id="update_seqno_down" parameterType="int">
+    UPDATE faq
+    SET faq_seqno = faq_seqno + 1
+    WHERE faqno=#{faqno}
+  </update>
+  
+</mapper>

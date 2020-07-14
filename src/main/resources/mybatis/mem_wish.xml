@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+ 
+<mapper namespace = "dev.mvc.mem_wish.Mem_wishDAOInter"> 
+
+<!-- 등록 -->
+<insert id="create" parameterType="Mem_wishVO">
+  INSERT INTO mem_wish(mem_wish_no, at_no, mem_wish_seqno, mem_no)
+  VALUES (mem_wish_seq.nextval, #{at_no}, (SELECT NVL(MAX(mem_wish_seqno), 0) + 1 as mem_wish_seqno FROM mem_wish), #{mem_no})
+</insert>
+
+
+<!-- 목록 -->
+<!-- <select id="list" resultType="Mem_wishVO">
+   SELECT mem_wish_no, at_no, mem_wish_seqno, mem_no
+   FROM mem_wish
+   ORDER BY mem_wish_no ASC
+</select> -->
+
+
+<!-- 목록 (상품 + 위시리스트 조인) -->
+<select id="list" parameterType="int" resultType="At_Mem_wishVO">
+  SELECT mem_wish_no,  mem_wish_seqno, mem_no, w.at_no as w_at_no,
+               at_visible, at_name, at_detail, at_price, a.at_no as a_at_no  
+  FROM mem_wish w, at a
+  WHERE (w.at_no  = a.at_no) and mem_no = #{mem_no}
+  ORDER BY mem_wish_seqno ASC
+</select>
+
+
+<!-- 검색 목록 + 페이징 (상품 + 위시리스트 조인) -->
+ <select id="list_search_paging"  parameterType="HashMap"  resultType="At_Mem_wishVO" >
+   SELECT mem_wish_no, mem_wish_seqno, mem_no, w_at_no, 
+                at_visible, at_name, at_detail, at_price, a_at_no, r
+   FROM (
+                SELECT mem_wish_no, mem_wish_seqno, mem_no, w_at_no, 
+                            at_visible, at_name, at_detail, at_price, a_at_no, rownum as r
+                FROM (
+                            SELECT mem_wish_no, mem_wish_seqno, mem_no, w.at_no as w_at_no, 
+                                      at_visible, at_name, at_detail, at_price, a.at_no as a_at_no
+                            FROM mem_wish w, at a
+                            <choose>
+                              <when test="word == null or word == ''">  <!-- 검색하지 않는 경우 -->
+                                WHERE mem_no = #{mem_no} AND (w.at_no = a.at_no)
+                              </when>
+                              <otherwise>
+                                WHERE mem_no = #{mem_no} AND (w.at_no = a.at_no) AND (at_name LIKE '%' || #{word}|| '%' )                     
+                              </otherwise>
+                            </choose>
+                            ORDER BY mem_wish_seqno DESC
+                )
+   )
+   WHERE <![CDATA[ r >= #{startNum} AND r <= #{endNum} ]]>
+ </select>   
+ 
+ 
+ <!-- 검색 레코드 갯수 -->
+<select id="search_count" parameterType="HashMap" resultType="int">
+   SELECT COUNT(*) as cnt
+   FROM mem_wish w, at a
+   WHERE (w.at_no  = a.at_no) and mem_no = #{mem_no}
+   <choose>
+     <when test="word == null or word == '' ">
+     </when>
+     <otherwise>
+      AND at_name LIKE '%' || #{word} || '%'
+     </otherwise>
+   </choose>
+</select>       
+
+
+<!-- 조회 -->
+<select id="read" parameterType="int" resultType="At_Mem_wishVO">
+    SELECT mem_wish_no, at_no, mem_wish_seqno, mem_no
+    FROM mem_wish
+    WHERE mem_wish_no = #{mem_wish_no}
+</select>
+
+
+<!-- 수정 -->
+<update id="update" parameterType="Mem_wishVO">
+  UPDATE mem_wish
+  SET at_no=#{at_no}, mem_wish_seqno=#{mem_wish_seqno},  mem_no=#{mem_no}
+  WHERE mem_wish_no=#{mem_wish_no}
+</update>
+
+
+<!-- 삭제 -->
+<delete id="delete" parameterType="int">
+  DELETE 
+  FROM mem_wish
+  WHERE mem_wish_no=#{mem_wish_no}
+</delete>
+
+
+<!-- 회원별 삭제 -->
+<delete id="delete_by_mem_no" parameterType="int">
+  DELETE 
+  FROM mem_wish
+  WHERE mem_no=#{mem_no}
+</delete>
+
+
+</mapper>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace = "dev.mvc.notice_attachfile.Notice_attachfileDAOInter">
+  <insert id="create" parameterType="Notice_attachfileVO">
+    INSERT INTO notice_attachfile(notice_attachfileno, noticeno, notice_fname, notice_fupname, notice_thumb, notice_fsize, notice_rdate)
+    VALUES(notice_attachfile_seq.nextval, #{noticeno}, #{notice_fname}, #{notice_fupname}, #{notice_thumb}, #{notice_fsize}, sysdate)
+  </insert>
+
+</mapper> 

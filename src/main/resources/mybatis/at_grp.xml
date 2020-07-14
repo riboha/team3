@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+ 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="dev.mvc.at_grp.At_grp_DAOInter">
+
+<!-- 카테고리 그룹 생성 -->
+<insert id="create" parameterType="At_grp_VO">
+INSERT INTO at_grp(at_grp_no, at_grp_name, at_grp_seqno, at_grp_visible)
+VALUES (at_grp_seq.nextval, #{at_grp_name}, #{at_grp_seqno}, #{at_grp_visible})
+</insert>
+
+
+<!-- (최종) 페이징 리스트 -->
+<select id="list_by_at_grp_paging" resultType="at_grp_VO" parameterType="HashMap" >
+  SELECT at_grp_no, at_grp_name, at_grp_seqno, at_grp_visible, r
+  FROM (
+           SELECT at_grp_no, at_grp_name, at_grp_seqno, at_grp_visible, rownum as r
+           FROM at_grp
+           ORDER BY at_grp_seqno                
+  )
+  
+  WHERE <![CDATA[ r >= #{startNum} AND r <= #{endNum} ]]>
+     <!-- 
+     1 page: WHERE r >= 1 AND r <= 10; 
+     2 page: WHERE r >= 11 AND r <= 20;
+     3 page: WHERE r >= 21 AND r <= 30;
+     -->                          
+</select>
+
+<!-- 전체 레코드 갯수 -->
+<select id="count" resultType="int">
+SELECT COUNT(*) as cnt
+FROM at_grp
+</select>
+
+
+
+<!-- 카테고리 그룹 리스트(출력 순서 순) -->
+<select id="list_seq_asc" resultType="At_grp_VO">
+SELECT at_grp_no, at_grp_name, at_grp_seqno, at_grp_visible
+FROM at_grp
+ORDER BY at_grp_seqno ASC
+</select>
+
+<!-- 출력 모드 변경 (Y or N) -->
+<update id="update_visible" parameterType="At_grp_VO" >
+UPDATE at_grp
+SET at_grp_visible =#{at_grp_visible}
+WHERE at_grp_no =#{at_grp_no}
+</update>
+
+<!-- 우선순위 상향 up 10 ▷ 1 -->
+<update id="update_seqno_up" parameterType="int">
+UPDATE at_grp
+SET at_grp_seqno = at_grp_seqno - 1
+WHERE at_grp_no =#{at_grp_no}
+</update>
+  
+<!-- 우선순위 하향 down 1 ▷ 10  -->
+<update id="update_seqno_down" parameterType="int">
+UPDATE at_grp
+SET at_grp_seqno = at_grp_seqno + 1
+WHERE at_grp_no =#{at_grp_no}
+</update>
+
+<!-- 수정을 위한 조회 -->
+<select id="read" resultType="At_grp_VO" parameterType="int" >
+SELECT at_grp_no, at_grp_name, at_grp_seqno, at_grp_visible
+FROM at_grp
+WHERE at_grp_no =#{at_grp_no}
+</select>
+
+<!-- 카테고리 그룹 수정 -->
+<update id="update" parameterType="At_grp_VO" >
+UPDATE at_grp
+SET at_grp_name=#{at_grp_name}, at_grp_seqno = #{at_grp_seqno}, at_grp_visible=#{at_grp_visible}
+WHERE at_grp_no=#{at_grp_no}
+</update>
+
+<!-- 카테고리 그룹 삭제 -->
+<delete id="delete" parameterType="int">
+DELETE FROM at_grp
+WHERE at_grp_no=#{at_grp_no}
+</delete>
+
+
+
+</mapper>

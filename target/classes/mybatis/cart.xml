@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+ 
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+ 
+<!-- dev.mvc.categrp.CategrpDAOInter 패키지에 등록된 interface 명시,
+      패키지명과 인터페이스명은 실제로 존재해야함,
+      Spring이 내부적으로 자동으로 interface를 구현해줌. -->
+<mapper namespace="dev.mvc.cart.CartDAOInter"> 
+
+ <insert id="create" parameterType="CartVO">
+	INSERT INTO CART(cart_no, mem_no, at_no, cart_cnt, cart_payment,  cart_date)
+	VALUES(cart_seq.nextval, #{mem_no}, #{at_no}, #{cart_cnt}, #{cart_payment}, sysdate)
+</insert> 
+
+
+
+
+<!-- 조인 !-!  -->
+  <!--column=오라클(sql)별명 , property = Cate_Contents_VO 의 이름   -->
+  <resultMap type="At_Cart_VO" id="At_Cart_VO_Map">
+    <result column="a_at_no" property="at_no" />
+    <result column="a_at_price" property="at_price" />
+    <result column="cart_no" property="cart_no" />
+    <result column="c_cart_cnt" property="cart_cnt" />
+    <result column="c_cart_payment" property="cart_payment" />
+    <result column="c_cart_date" property="cart_date" />
+  </resultMap>
+  
+  
+    
+  <select id="at_cart_mem_list" parameterType="int" resultMap="At_Cart_VO_Map">
+      SELECT   c.cart_no as cart_no, c.cart_cnt as c_cart_cnt, c.cart_payment as c_cart_payment,  c.cart_date as c_cart_date,
+                      a.at_no  as  a_at_no, a.at_price as a_at_price
+      FROM   cart c,  at  a,  mem  m
+      WHERE           c.at_no = a.at_no  AND c.mem_no = m.mem_no  AND m.mem_no =#{mem_no}
+      ORDER BY cart_no ASC
+  </select>
+  
+  <select id ="read" resultType="CartVO" parameterType="int">
+      SELECT cart_no, mem_no, at_no, cart_cnt, cart_payment,  cart_date
+      FROM cart
+      WHERE cart_no=#{cart_no}
+  </select>
+  
+  <delete id="delete" parameterType="CartVO">
+    DELETE FROM cart
+    WHERE cart_no = #{cart_no} AND mem_no=#{mem_no}
+  </delete>
+  
+  <update id="update" parameterType="CartVO">
+      UPDATE cart
+      SET  cart_cnt=#{cart_cnt}
+      WHERE cart_no=#{cart_no} AND mem_no=#{mem_no}  
+  </update>
+  
+  
+   <select id ="cart_sum" resultType="int" >
+      SELECT NVL(sum(a.at_price*c.cart_cnt),0) cart_sum
+      FROM cart c, at a
+      WHERE a.at_no = c.at_no AND  c.mem_no=#{mem_no}
+  </select>
+ 
+ 
+
+ 
+ 
+ 
+ 
+ 
+ 
+</mapper>

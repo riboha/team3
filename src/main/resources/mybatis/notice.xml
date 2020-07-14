@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+ 
+<mapper namespace = "dev.mvc.notice.NoticeDAOInter">
+  <!-- 공지사항 등록 -->
+  <insert id="create" parameterType="NoticeVO">
+    INSERT INTO notice(noticeno, notice_title, notice_content, notice_rname, notice_passwd, notice_visible, notice_cnt, notice_division, notice_rdate)
+    VALUES(notice_seq.nextval, #{notice_title}, #{notice_content}, #{notice_rname}, #{notice_passwd}, #{notice_visible}, #{notice_cnt}, #{notice_division}, sysdate)
+  </insert>
+  
+  <!-- 전체 목록 -->
+  <select id="list" resultType="NoticeVO">
+    SELECT noticeno, notice_title, notice_content, notice_rname, notice_passwd, notice_visible, notice_cnt, notice_division, notice_rdate
+    FROM notice 
+    ORDER BY noticeno DESC
+  </select>
+  
+  <!-- 공지사항 검색 목록 -->
+   <select id="list_by_search" resultType="NoticeVO" parameterType="HashMap">
+      SELECT noticeno, notice_title, notice_content, notice_rname,
+                 notice_cnt, notice_division, notice_rdate
+      FROM notice
+      WHERE (notice_title LIKE '%' || #{word} || '%' 
+                  OR notice_content LIKE '%' || #{word} || '%')
+          ORDER BY noticeno DESC  
+   </select>  
+  
+  <!-- 공지사항 검색 목록 + 페이징 + 메인 이미지 -->
+   <select id="list_by_search_paging" resultType="NoticeVO" parameterType="HashMap">
+   SELECT noticeno, notice_title, notice_content, notice_rname, notice_cnt, notice_division, notice_rdate, r
+      FROM (
+                 SELECT noticeno, notice_title, notice_content, notice_rname, notice_cnt, notice_division, notice_rdate, rownum as r
+                 FROM (
+                           SELECT noticeno, notice_title, notice_content, notice_rname, notice_cnt, notice_division, notice_rdate
+                           FROM notice
+                           WHERE (notice_title LIKE '%' || #{word} || '%' OR notice_content LIKE '%' || #{word} || '%')
+                           ORDER BY noticeno DESC
+                 )          
+      )
+     WHERE <![CDATA[ r >= #{startNum} AND r <= #{endNum} ]]>
+     <!-- 
+     1 page: WHERE r >= 1 AND r <= 10; 
+     2 page: WHERE r >= 11 AND r <= 20;
+     3 page: WHERE r >= 21 AND r <= 30;
+     -->                          
+   </select>   
+   
+  <!-- 공지사항 조회 -->
+  <select id="read" resultType="NoticeVO" parameterType="int">
+    SELECT noticeno, notice_title, notice_content, notice_rname, notice_passwd, notice_visible, notice_cnt, notice_division, notice_rdate
+    FROM notice 
+    WHERE noticeno = #{noticeno}
+  </select>
+  
+  <!-- 공지사항 수정 -->
+  <update id="update" parameterType="NoticeVO">
+    UPDATE notice 
+    SET notice_title=#{notice_title}, notice_content=#{notice_content}, notice_rname=#{notice_rname}, notice_visible=#{notice_visible}
+    WHERE noticeno = #{noticeno}
+  </update>
+  
+  <!-- 패스워드 검사 -->
+  <select id="passwd_check" parameterType="HashMap" resultType="int">
+    SELECT COUNT(*) as notice_passwd_cnt
+    FROM notice
+    WHERE noticeno= #{noticeno} AND notice_passwd= #{notice_passwd}
+  </select>  
+  
+  <!-- 공지사항 삭제 -->
+  <delete id="delete" parameterType="int">
+    DELETE FROM notice
+    WHERE noticeno= #{noticeno}
+  </delete>
+  
+    <!-- 출력 모드의 변경
+        수정, id: update_visible, 입력: NoticeVO, 리턴: int -->
+  <update id="update_visible" parameterType="NoticeVO">
+    UPDATE notice
+    SET notice_visible=#{notice_visible}
+    WHERE noticeno=#{noticeno}
+  </update>
+  
+  <!-- 조회수 -->
+  <update id="notice_cnt" parameterType="int">
+    UPDATE notice
+    SET notice_cnt = notice_cnt + 1
+    WHERE noticeno = #{noticeno}
+  </update>  
+  
+  <!-- 공지사항 검색 레코드 갯수 -->
+  <select id="search_count" resultType="int" parameterType="HashMap">
+    SELECT COUNT(*) as cnt
+    FROM notice
+    WHERE  (notice_title LIKE '%' || #{word} || '%'
+                  OR notice_content LIKE '%' || #{word} || '%')
+
+  </select>
+</mapper>

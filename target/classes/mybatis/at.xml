@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+ 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="dev.mvc.at.At_DAOInter">
+
+
+ <select id="search_count" resultType="int" parameterType="HashMap">
+    SELECT COUNT(*) as cnt
+    FROM at
+    <choose>
+      <when test="at_name == null or at_name == ''">
+        WHERE at_grp_no=#{at_grp_no}
+      </when>
+      <otherwise>
+        WHERE at_grp_no=#{at_grp_no} AND (at_name like '%' || #{at_name} || '%'
+                          OR at_content like '%' || #{at_name} || '%' 
+                          OR at_detail like '%' || #{at_name} || '%')
+      </otherwise>
+    </choose>
+ </select> 
+
+<!--  at + at_img  -->
+<select id="at_img_list" resultType="At_Img" parameterType="HashMap">
+SELECT at_no, at_img_fupname, at_grp_no, at_seqno, at_visible, at_name, at_detail, at_price, r
+FROM (
+           SELECT at_no, at_img_fupname, at_grp_no, at_seqno, at_visible, at_name, at_detail, at_price, rownum as r
+           FROM (
+                     SELECT a.at_no, b.at_img_fupname, a.at_grp_no, a.at_seqno, a.at_visible, a.at_name, a.at_detail, a.at_price
+                     FROM at a, at_img b
+                     <choose>
+                       <when test="at_name == null or at_name == ''"> <!-- 검색하지 않는 경우 -->
+                     WHERE a.at_no = b.at_no and at_grp_no=#{at_grp_no} and b.at_img_seqno=0
+                       </when>
+                       <otherwise>
+                     WHERE a.at_no = b.at_no and at_grp_no=#{at_grp_no} 
+                     and b.at_img_seqno=0 
+                     and (at_name like '%' || #{at_name} || '%'
+                          OR at_content like '%' || #{at_name} || '%' 
+                          OR at_detail like '%' || #{at_name} || '%'
+                          )
+                          
+                       </otherwise>
+                     </choose>
+                     ORDER BY at_seqno ASC
+                )         
+)
+WHERE <![CDATA[ r >= #{startNum} AND r <= #{endNum} ]]>
+</select> 
+
+
+<!--  at + at_img  -->
+<select id="list_main" resultType="At_Img" parameterType="HashMap">
+SELECT at_no, at_img_fupname, at_grp_no, at_seqno, at_visible, at_name, at_detail, at_price, r
+FROM (
+           SELECT at_no, at_img_fupname, at_grp_no, at_seqno, at_visible, at_name, at_detail, at_price, rownum as r
+           FROM (
+                     SELECT a.at_no, b.at_img_fupname, a.at_grp_no, a.at_seqno, a.at_visible, a.at_name, a.at_detail, a.at_price
+                     FROM at a, at_img b
+                     WHERE a.at_no = b.at_no and at_grp_no=#{at_grp_no} and b.at_img_seqno=0
+                     ORDER BY at_seqno ASC
+                )         
+)
+WHERE <![CDATA[ r >= #{startNum} AND r <= #{endNum} ]]>
+</select> 
+
+
+
+  <!-- 전체글수(전체레코드수)/ 파라미터 없음 -->
+  <select id="total_count" resultType="int">
+    SELECT COUNT(*) as cnt
+    FROM
+    at
+  </select>
+
+  <!-- 조회 -->
+  <select id="read" resultType="At_VO" parameterType="int">
+    SELECT
+    at_no, at_grp_no, at_seqno, at_visible, at_name, at_detail,
+    at_price, at_content, at_cancle, at_lowest, at_hit, at_dur, at_lang,
+    at_sns, at_map
+    FROM at
+    WHERE at_no =#{at_no}
+  </select>
+
+
+  <!-- at, dates 동시 등록 : 합치면 fk 관리 편한데 같은 갯수의 row가 삽입 -->
+  <!-- <insert id="create" parameterType="At_Dates"> INSERT ALL INTO at(at_no, 
+    at_grp_no, at_seqno, at_visible, at_name, at_detail, at_price, at_content, 
+    at_cancle, at_lowest, at_dur, at_lang, at_sns, at_map, at_img, at_thum, at_img_size) 
+    VALUES (at_seq.nextval, #{at_grp_no}, #{at_seqno}, #{at_visible}, #{at_name}, 
+    #{at_detail}, #{at_price},#{at_content}, #{at_cancle}, #{at_lowest}, #{at_dur}, 
+    #{at_lang},#{at_sns}, #{at_map}) INTO dates(dates_no, at_no, dates_date) 
+    VALUES (dates_seq.nextval, at_seq.nextval, #{dates_date}) SELECT * FROM DUAL 
+    </insert> -->
+
+  <!--- at등록 -->
+  <insert id="create" parameterType="At_Dates_Img">
+    INSERT INTO at(at_no,
+    at_grp_no, at_seqno, at_visible, at_name, at_detail,
+    at_price,
+    at_content, at_cancle, at_lowest, at_dur, at_lang, at_sns,
+    at_map)
+    VALUES (at_seq.nextval, #{at_grp_no}, #{at_seqno}, #{at_visible},
+    #{at_name}, #{at_detail}, #{at_price}, #{at_content}, #{at_cancle},
+    #{at_lowest}, #{at_dur}, #{at_lang}, #{at_sns}, #{at_map})
+  </insert>
+
+
+  <!-- at삭제 -->
+  <delete id="delete" parameterType="int">
+    DELETE FROM at
+    WHERE
+    at_no=#{at_no}
+  </delete>
+
+
+  <!-- at 수정 -->
+  <update id="update" parameterType="At_Dates_Img">
+    UPDATE at
+    SET
+    at_name=#{at_name}, at_seqno=#{at_seqno}, at_visible=#{at_visible},
+    at_detail=#{at_detail},
+    at_price=#{at_price},
+    at_content=#{at_content}, at_cancle=#{at_cancle},
+    at_lowest=#{at_lowest}, at_dur=#{at_dur}, at_lang=#{at_lang},
+    at_sns=#{at_sns}, at_map=#{at_map}
+    WHERE at_no=#{at_no}
+  </update>
+
+
+
+</mapper>

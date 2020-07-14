@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+ 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="dev.mvc.at_img.At_Img_DAOInter">
+
+<!-- 상품 및 이미지 등록  -->
+<insert id="create" parameterType="At_Dates_Img">
+     <selectKey keyProperty="at_no" resultType="int" order="BEFORE">
+      SELECT at_seq.currval FROM dual
+    </selectKey>
+
+insert into at_img(at_img_no, at_no, at_img_fname, at_img_fupname, at_img_thumb, at_img_size, at_img_seqno)
+values(at_img_seq.nextval, #{at_no}, #{at_img_fname}, #{at_img_fupname}, #{at_img_thumb}, #{at_img_size}, (select count(*) from at_img where at_no=#{at_no}))
+</insert>
+
+<!-- 이미지 추가(수정) -->
+<insert id="modify" parameterType="At_Dates_Img">
+INSERT INTO at_img(at_img_no, at_no, at_img_fname,at_img_fupname, at_img_thumb, at_img_size)
+VALUES(at_img_seq.nextval, #{at_no}, #{at_img_fname}, #{at_img_fupname}, #{at_img_thumb}, #{at_img_size})
+</insert>
+
+
+<!-- 이미지 리스트 -->
+<select id="read" parameterType="int" resultType="At_Dates_Img">
+SELECT at_img_no, at_no, at_img_fname,at_img_fupname, at_img_thumb, at_img_size
+FROM at_img
+WHERE at_no=#{at_no}
+ORDER BY at_img_no ASC
+</select>
+
+
+<!-- 이미지 리스트 1행만 -->
+<select id="read_row" parameterType="int" resultType="At_Dates_Img">
+SELECT at_img_no, at_no, at_img_fname,at_img_fupname, at_img_thumb, at_img_size
+FROM at_img
+WHERE at_no=#{at_no} <![CDATA[ AND ROWNUM =1 ]]>
+ORDER BY at_img_no ASC
+</select>
+
+<!-- 해당 상품 이미지 전체 삭제 -->
+<delete id="delete" parameterType="int">
+DELETE FROM at_img
+WHERE at_no=#{at_no} 
+</delete>
+
+</mapper>

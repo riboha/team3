@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+ 
+<mapper namespace = "dev.mvc.mem.MemDAOInter">
+
+<!-- 아이디 중복 체크 -->
+<select id="checkID" resultType="int" parameterType="String">
+  SELECT COUNT(mem_id) as cnt
+  FROM mem
+  WHERE mem_id=#{mem_id}
+</select> 
+
+<!-- 닉네임 중복 체크 -->
+<select id="checkNick" resultType="int" parameterType="String">
+  SELECT COUNT(mem_nick) as cnt
+  FROM mem
+  WHERE mem_nick=#{mem_nick}
+</select> 
+
+<!-- 핸드폰 번호 중복 체크 -->
+<select id="checkTel" resultType="int" parameterType="String">
+  SELECT COUNT(mem_tel) as cnt
+  FROM mem
+  WHERE mem_tel=#{mem_tel}
+</select> 
+
+<!-- 등록 -->
+<insert id="create" parameterType="MemVO">
+    <selectKey keyProperty="mem_no" resultType="int" order="BEFORE">
+        SELECT mem_seq.nextval FROM dual
+    </selectKey>     
+  INSERT INTO mem(mem_no, mem_id, mem_pw, mem_name, mem_nick, 
+                                mem_zip, mem_addr1, mem_addr2, mem_tel, mem_date, 
+                                mem_pic_name_up, mem_pic_th, mem_pic_size)
+                            
+  VALUES (#{mem_no}, #{mem_id}, #{mem_pw},  #{mem_name}, #{mem_nick}, 
+                #{mem_zip}, #{mem_addr1}, #{mem_addr2},  #{mem_tel},  sysdate,
+                #{mem_pic_name_up}, #{mem_pic_th}, #{mem_pic_size})
+</insert>
+
+<!--  프로필 사진 등록 (수정) -->
+ <update id="update_pic" parameterType="HashMap">
+  UPDATE mem 
+  SET mem_pic_name_up=#{mem_pic_name_up, jdbcType=VARCHAR}, mem_pic_th=#{mem_pic_th, jdbcType=VARCHAR}, mem_pic_size=#{mem_pic_size, jdbcType=INTEGER}
+  WHERE mem_no=#{mem_no}
+</update> 
+
+ 
+<!-- 목록 -->
+<select id="list" resultType="MemVO">
+  SELECT mem_no, mem_id, mem_pw, mem_nick, mem_name, mem_addr1, mem_addr2, mem_zip, mem_tel, mem_date
+  FROM mem
+  ORDER BY mem_no ASC
+</select>
+
+<!-- 목록 (상태별) -->
+<select id="list_select" parameterType = "int" resultType="MemVO">
+  SELECT mem_no, mem_id, mem_pw, mem_nick, mem_name, mem_addr1, mem_addr2, mem_zip, mem_tel, mem_date, mem_sts
+  FROM mem
+  WHERE mem_sts = #{mem_sts}
+</select>
+
+
+<!-- 검색 목록 + 페이징 + 메인 이미지 -->
+<select id="list_search_paging" parameterType="HashMap" resultType="MemVO">
+     SELECT  mem_no, mem_id, mem_pw, mem_nick, mem_name, mem_addr1, mem_addr2, mem_zip, mem_tel, mem_date, r
+     FROM (
+                SELECT  mem_no, mem_id, mem_pw, mem_nick, mem_name, mem_addr1, mem_addr2, mem_zip, mem_tel, mem_date, rownum as r
+                FROM (
+                          SELECT  mem_no, mem_id, mem_pw, mem_nick, mem_name, mem_addr1, mem_addr2, mem_zip, mem_tel, mem_date
+                          FROM mem
+                          
+                          <choose>
+                            <when test="search == all"> 
+                              WHERE  (mem_id LIKE '%' || #{word} || '%' OR mem_name LIKE '%' || #{word} || '%' OR mem_nick LIKE '%' || #{word} || '%'  OR mem_tel LIKE '%' || #{word} || '%')
+                            </when>
+                            <when test="search == mem_id"> 
+                              WHERE  (mem_id LIKE '%' || #{word} || '%')
+                            </when>
+                            <when test="search == mem_name"> 
+                              WHERE  (mem_name LIKE '%' || #{word} || '%')
+                            </when>
+                            <when test="search == mem_nick"> 
+                              WHERE  (mem_nick LIKE '%' || #{word} || '%')
+                            </when>
+                          </choose>
+                          
+                          <choose>
+                            <when test="order == 'mem_no'">
+                              ORDER BY mem_no DESC
+                            </when>
+                            <when test="order == 'mem_date'">
+                              ORDER BY mem_date DESC
+                            </when>
+                            <otherwise>
+                              ORDER BY mem_no DESC
+                            </otherwise>
+                          </choose>
+                          
+                )
+     )
+ WHERE <![CDATA[ r >= #{startNum} AND r <= #{endNum} ]]>
+ 
+ <!-- WHERE r >= #{startNum} AND r <= #{endNum}  ▷  >, <는 태그로 인식, 엔티티 처리 필요-->
+ <!-- WHERE ＆gt; = #{startNum} AND r ＆lt; = #{endNum} ▷ 도 사용 가능 -->
+ 
+ <!-- 
+ 1 page: WHERE r >= 1 AND r <= 10; 
+ 2 page: WHERE r >= 11 AND r <= 20;
+ 3 page: WHERE r >= 21 AND r <= 30;
+ -->                          
+</select>
+   
+
+<!-- 검색 레코드 갯수 -->
+<select id="search_count" parameterType="HashMap" resultType="int">
+   SELECT COUNT(*) as cnt
+   FROM mem
+   <choose>
+     <when test="word == null or word == '' ">
+     </when>
+     <otherwise>
+       WHERE  (mem_id LIKE '%' || #{word} || '%' OR mem_nick LIKE '%' || #{word} || '%' OR mem_addr1 LIKE '%' || #{word} || '%')
+     </otherwise>
+   </choose>
+</select>       
+
+
+ 
+
+<!-- 조회 -->
+<select id="read" parameterType="int" resultType="MemVO">
+  SELECT mem_no, mem_id, mem_pw, mem_name, mem_nick, mem_zip, mem_addr1, mem_addr2, mem_tel, mem_date, mem_pic_name_up, mem_pic_th
+  FROM mem
+  WHERE mem_no = #{mem_no}
+</select>
+
+
+<!-- 수정 -->
+<update id="update" parameterType="HashMap">
+  UPDATE mem 
+  SET mem_pw=#{mem_pw}, mem_tel=#{mem_tel}, 
+        mem_zip=#{mem_zip, jdbcType=INTEGER}, mem_addr1=#{mem_addr1, jdbcType=VARCHAR}, mem_addr2=#{mem_addr2, jdbcType=VARCHAR}, 
+        mem_pic_name_up=#{mem_pic_name_up, jdbcType=VARCHAR}, mem_pic_th=#{mem_pic_th, jdbcType=VARCHAR}, mem_pic_size=#{mem_pic_size, jdbcType=INTEGER} 
+  WHERE mem_no=#{mem_no}
+</update>
+
+
+<!-- 삭제 -->
+<delete id="delete" parameterType="int">
+  DELETE 
+  FROM mem
+  WHERE mem_no=#{mem_no}
+</delete>
+
+
+<!-- 패스워드 검사 -->
+<select id="check_pw" parameterType="HashMap" resultType="int">
+  SELECT COUNT(mem_no) as cnt
+  FROM mem
+  WHERE mem_no=#{mem_no} AND mem_pw=#{mem_pw}
+</select>
+
+
+<!--  패스워드 수정 -->
+<update id="updatePW" parameterType="HashMap"> <!-- return: 수정된 레코드 갯수 -->
+  UPDATE mem
+  SET mem_pw=#{mem_pw}
+  WHERE mem_no=#{mem_no}
+</update>
+
+
+<!-- 로그인 -->
+<select id="login" parameterType="Map" resultType="int">
+  SELECT COUNT(mem_no) as cnt
+  FROM mem
+  WHERE mem_id=#{mem_id} AND mem_pw=#{mem_pw}
+</select>
+
+
+<!-- mem_id 이용한 회원 정보 조회 -->
+<select id="readById" parameterType="String" resultType="MemVO">
+    SELECT mem_no, mem_id, mem_pw, mem_name, mem_nick, mem_zip, mem_addr1, mem_addr2, mem_tel, mem_pt, mem_sts, mem_date, 
+                            mem_pic_name_up, mem_pic_th, mem_pic_size
+    FROM mem
+    WHERE mem_id = #{mem_id}
+</select>
+
+
+
+</mapper>
+  

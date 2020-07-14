@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns="http://www.springframework.org/schema/mvc"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:beans="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/mvc https://www.springframework.org/schema/mvc/spring-mvc.xsd
+		http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd">
+
+	<!-- DispatcherServlet Context: defines this servlet's request-processing infrastructure -->
+	
+	<!-- Enables the Spring MVC @Controller programming model -->
+	<annotation-driven />
+
+	<!-- Handles HTTP GET requests for /resources/** by efficiently serving up static resources in the ${webappRoot}/resources directory -->
+	<!-- <resources mapping="/resources/**" location="/resources/" /> -->
+    <default-servlet-handler/>
+
+	<!-- Resolves views selected for rendering by @Controllers to .jsp resources in the /WEB-INF/views directory -->
+	<beans:bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<!-- <beans:property name="prefix" value="/WEB-INF/views/" /> -->
+        <beans:property name="prefix" value="/" /> <!-- /webapp -->
+		<beans:property name="suffix" value=".jsp" />
+	</beans:bean>
+	
+	<context:component-scan base-package="dev.mvc.team3" /> 
+  
+	<context:component-scan base-package="dev.mvc.mem" /> <!-- 강지은  -->
+	<context:component-scan base-package="dev.mvc.mem_pic" /> 
+	<context:component-scan base-package="dev.mvc.mem_wish" /> 
+	<context:component-scan base-package="dev.mvc.mem_his" /> 
+	<context:component-scan base-package="dev.mvc.review" /> 
+  
+	<context:component-scan base-package="dev.mvc.cart" /> <!--  김채성 -->
+	<context:component-scan base-package="dev.mvc.payment" /> 
+	<context:component-scan base-package="dev.mvc.payment_details" /> 
+
+	<context:component-scan base-package="dev.mvc.at_grp" />  <!-- 설수영 -->
+	<context:component-scan base-package="dev.mvc.at" /> 
+	<context:component-scan base-package="dev.mvc.at_img" /> 
+	<context:component-scan base-package="dev.mvc.dates" /> 
+  
+	<context:component-scan base-package="dev.mvc.surv" /> <!-- 차미정 -->
+	<context:component-scan base-package="dev.mvc.surv_choice" /> 
+	<context:component-scan base-package="dev.mvc.surv_item" /> 
+  
+	<context:component-scan base-package="dev.mvc.admin" /> 
+	<context:component-scan base-package="dev.mvc.faq" /> <!-- 한수지 -->
+	<context:component-scan base-package="dev.mvc.notice" /> 
+	<context:component-scan base-package="dev.mvc.notice_attachfile" /> 
+  
+  
+    <!-- 파일 전송  -->
+    <beans:bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+    </beans:bean>
+  
+    <!-- 관리자 목록 -->
+    <beans:bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer"> 
+      <beans:property name="location" value="/WEB-INF/config/admin.properties"/> 
+      <beans:property name="fileEncoding" value="UTF-8" /> 
+    </beans:bean>
+	
+	
+	
+</beans:beans>
